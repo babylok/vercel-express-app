@@ -8,15 +8,15 @@ const router = express.Router();
 // Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone, userType } = req.body;
+    const { name, email, password, phone, role } = req.body;
     
     // Validate required fields
-    if (!name || !email || !password || !phone || !userType) {
+    if (!name || !email || !password || !phone || !role) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Validate user type
-    if (!['passenger', 'driver'].includes(userType)) {
+    if (!['passenger', 'driver'].includes(role)) {
       return res.status(400).json({ message: 'Invalid user type' });
     }
 
@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
       email,
       password,
       phone,
-      role: userType
+      role
     });
 
     await user.save();
@@ -51,6 +51,7 @@ router.post('/register', async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -110,6 +111,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        role: user.role,
       },
     });
   } catch (error) {
