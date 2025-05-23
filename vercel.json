@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "MONGODB_URI": "@mongodb_uri",
+    "MONGODB_URI": "mongodb+srv://babylok:123456@cluster0.0zqjg.mongodb.net/ride-sphere-nexus-main",
     "JWT_SECRET": "@jwt_secret",
     "STRIPE_SECRET_KEY": "@stripe_secret",
     "STRIPE_WEBHOOK_SECRET": "@stripe_webhook",
