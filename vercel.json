@@ -11,8 +11,5 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "mongodb://manloktse:ozjC4gUIvleAeFSa@myfirstmongodb.xc81m.mongodb.net/?retryWrites=true&w=majority&appName=myFirstMongoDB"
-  }
+  ]
 }
