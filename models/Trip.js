@@ -42,7 +42,15 @@ const tripSchema = new mongoose.Schema({
   vehicleType: {
     type: String,
     required: true,
-    enum: ['economy', 'comfort', 'luxury'],
+    enum: ['Standard', 'Premium', 'SUV', 'Electric'],
+  },
+  createdAt: {
+    type: Date,
+    default: () => new Date(),
+  },
+  updatedAt: {
+    type: Date,
+    default: () => new Date(),
   },
   estimatedPrice: {
     type: Number,
@@ -69,16 +77,9 @@ const tripSchema = new mongoose.Schema({
     max: 5,
   },
   review: String,
-  route: [{
-    timestamp: {
-      type: Date,
-      default: Date.now,
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-    },
-  }],
+  routePath:{
+    type: String,
+  },
 }, {
   timestamps: true,
 });
