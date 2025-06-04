@@ -7,7 +7,6 @@ const router = express.Router();
 
 
 router.post('/', async (req, res) => {
-  console.log('here')
   try {
     const { origin, destination } = req.body;
     
@@ -21,11 +20,14 @@ router.post('/', async (req, res) => {
     // 你需要在.env中添加GOOGLE_MAPS_API_KEY
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     
-    const response = await client.directions({
-      origin: `${origin.lat},${origin.lng}`,
-      destination: `${destination.lat},${destination.lng}`,
-      mode: 'driving',
-      language: 'zh-TW'
+    const response = await axios.get(directionsUrl, {
+      params: {
+        origin: `${origin.lat},${origin.lng}`,
+        destination: `${destination.lat},${destination.lng}`,
+        key: apiKey,
+        mode: 'driving',
+        language: 'zh-TW'
+      }
     });
 
     const { routes } = response.data;
