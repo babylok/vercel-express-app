@@ -12,6 +12,7 @@ import tripRoutes from './routes/trips.js';
 import paymentRoutes from './routes/payments.js';
 import userRoutes from './routes/users.js';
 import testingRoutes from './routes/testing.js';
+import calculateRoute from './routes/calculate-route.js';
 
 const app = express();
 const server = createServer(app);
@@ -49,6 +50,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/testing', testingRoutes); 
+app.use('/api/calculate-route', calculateRoute);
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
