@@ -172,5 +172,6 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+
 // 導出 app 用於 Vercel serverless 環境
 export default app;
