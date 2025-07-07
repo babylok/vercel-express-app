@@ -2,8 +2,8 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import Trip from '../models/Trip.js';
 import User from '../models/User.js';
-import geolib from 'geolib';
 import schedule from 'node-schedule';
+import { io } from '../server.js';
 
 const router = express.Router();
 
@@ -26,6 +26,11 @@ schedule.scheduleJob('*/5 * * * *', async () => {
       await Trip.findByIdAndUpdate(trip._id, updateData, {
         new: true,
         runValidators: true
+      });
+      io.to(`trip_${trip._id}`).emit('trip_status_update', {
+        tripId: trip._id,
+        status: 'cancelled',
+        updatedAt: new Date()
       });
       console.log(`Trip ${trip._id} has been cancelled due to timeout`);
     }
@@ -50,6 +55,10 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+router.get('/test', (req, res) => {
+  sendMessage(`trip_68552bf856a94eee1d9371e3`,'in_trip_status_update',{ message: 'accept Trip',status:"status" });
+  res.json({ message: 'Test route' });
+});
 // Get passenger's trip history
 router.get('/history', verifyToken, async (req, res) => {
   try {
@@ -62,7 +71,7 @@ router.get('/history', verifyToken, async (req, res) => {
       .exec();
 
     // Transform trip data for frontend
-    console.log('Found trips:', trips);
+    //console.log('Found trips:', trips);
     const transformedTrips = trips.map(trip => ({
       id: trip._id,
       date: trip.createdAt.toLocaleString('en-US', { 
@@ -133,7 +142,7 @@ router.post('/', verifyToken, async (req, res) => {
         message: 'Pickup and dropoff locations must include coordinates and address'
       });
     }
-
+    console.log(req.userId);
     // Create trip
     const trip = new Trip({
       passenger: req.userId,
@@ -152,8 +161,10 @@ router.post('/', verifyToken, async (req, res) => {
       estimatedDuration: tripData.estimatedDuration,
       status: tripData.status || 'pending',
       paymentStatus: 'pending',
-      routePath: tripData.routePath ,  
+      routePath: tripData.routePath,  
       estimatedDistance: tripData.estimatedDistance || 0,
+      seletedTunnel:tripData.seletedTunnel || [],
+      seletedOption:tripData.seletedOption || [],
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -163,7 +174,11 @@ router.post('/', verifyToken, async (req, res) => {
     try {
       //console.log('Saving trip:', trip);
       await trip.save();
-      console.log('Trip saved successfully:', trip);
+      //console.log('Trip saved successfully:', trip);
+
+      
+      sendMessage(`driver_room`,'trip_status_update',{ message: 'Test event' })
+      
 
       res.status(201).json({
         trip: {
@@ -247,20 +262,58 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
+function sendMessage(roomId,messageType,message){
+  console.log('messageType',messageType)
+  io.to(roomId).emit(messageType, message);
+}
 // Update trip status
 router.patch('/:id/status', verifyToken, async (req, res) => {
   try {
-    const { status } = req.body;
     const trip = await Trip.findById(req.params.id);
-
     if (!trip) {
       return res.status(404).json({ message: 'Trip not found' });
     }
+    
+    // 只有乘客和司机可以更新狀態
+    if (trip.driver&&(trip.passenger.toString() !== req.userId && trip.driver.toString() !== req.userId)) {
+      
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    console.log('req.userId')
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+    // 如果是司机接受行程，自动更新司机信息
+    if (status === 'accepted') {
+      if (trip.passenger.toString() !== req.userId) {
+        // 只有当司机接受行程时才更新司机信息
+        trip.driver = req.userId;
+        //await trip.save();
+        //console.log('saved')
+        //sendMessage(`trip_${trip._id}`,'in_trip_status_update',{ message: 'accept Trip',status:status });
+       
+      }
+    }
+    
+   
 
+    // 更新行程狀態
     trip.status = status;
     await trip.save();
-
-    res.json({ trip });
+    sendMessage(`trip_${trip._id}`,'in_trip_status_update',{ message: 'Trip update',status:status });
+    
+    
+    sendMessage(`driver_room`,'trip_status_update',{ message: 'Test event' })
+    
+    res.json({
+      message: 'Trip status updated successfully',
+      trip: {
+        id: trip._id,
+        ...trip.toObject(),
+        _id: undefined // Remove _id field, use id
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

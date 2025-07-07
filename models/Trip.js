@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+//import { io } from '../server.js';
 
 const tripSchema = new mongoose.Schema({
   passenger: {
@@ -36,7 +37,7 @@ const tripSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'],
+    enum: ['pending', 'accepted', 'en_route_to_pickup', 'arrived_at_pickup', 'in_progress','arrived', 'completed', 'cancelled'],
     default: 'pending',
   },
   vehicleType: {
@@ -51,6 +52,12 @@ const tripSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: () => new Date(),
+  },
+  seletedTunnel:{
+    type:Array
+  },
+  seletedOption:{
+    type:Array
   },
   estimatedPrice: {
     type: Number,
@@ -87,6 +94,8 @@ const tripSchema = new mongoose.Schema({
 // Create 2dsphere index for location queries
 tripSchema.index({ pickupLocation: '2dsphere' });
 tripSchema.index({ dropoffLocation: '2dsphere' });
+
+
 
 const Trip = mongoose.model('Trip', tripSchema);
 export default Trip;
