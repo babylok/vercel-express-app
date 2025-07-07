@@ -165,6 +165,12 @@ mongoose.connect(process.env.MONGODB_URI)
 
 const PORT = process.env.PORT;
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// 開發環境直接啟動服務器
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// 導出 app 用於 Vercel serverless 環境
+export default app;
